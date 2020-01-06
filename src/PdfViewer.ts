@@ -6,7 +6,7 @@ export default class PdfViewer extends HTMLElement {
   file: File;
   canvas: HTMLCanvasElement;
 
-  constructor(file: File) {
+  constructor() {
     super();
     this.file = null;
     this.attachShadow({ mode: "open" });
@@ -14,7 +14,7 @@ export default class PdfViewer extends HTMLElement {
     this.shadowRoot.appendChild(this.canvas);
   }
 
-  async setFile(file: File) {
+  async setFile(file: File): Promise<void> {
     this.file = file;
 
     const fileContents = await readBlobAsArrayBuffer(this.file);
