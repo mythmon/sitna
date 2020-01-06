@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --open",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "build": "webpack --mode production"
   },
   "dependencies": {
     "autobind-decorator": "^2.4.0",

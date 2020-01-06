@@ -7,11 +7,9 @@ module.exports = {
   entry: "./src/index.ts",
 
   output: {
-    path: '/',
+    path: path.resolve(__dirname, 'dist'),
     filename: "bundle.js"
   },
-
-  // devtool: 'inline-source-map',
 
   devServer: {
     contentBase: './dist',
