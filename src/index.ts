@@ -6,7 +6,7 @@ async function main(): Promise<void> {
 
   const pdfViewer = makeEl("sitna-pdf-viewer");
 
-  const fileInput = makeEl("input", { accept: "pdf", type: "file" });
+  const fileInput = makeEl("input", { accept: ".pdf", type: "file" });
   fileInput.addEventListener("change", () => {
     if (fileInput.files.length > 1) {
       throw new Error("Can only open one PDF at a time");
