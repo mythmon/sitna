@@ -1,0 +1,27 @@
+{
+  "name": "sitna",
+  "description": "Web app to reference PDFs",
+  "repository": "https://github.com/mythmon/sitna",
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack-dev-server --open"
+  },
+  "dependencies": {
+    "autobind-decorator": "^2.4.0",
+    "pdfjs-dist": "^2.2.228"
+  },
+  "devDependencies": {
+    "@types/pdfjs-dist": "^2.1.3",
+    "@typescript-eslint/eslint-plugin": "^2.14.0",
+    "@typescript-eslint/parser": "^2.14.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "html-webpack-plugin": "^3.2.0",
+    "prettier": "^1.19.1",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
+  }
+}
