@@ -1,15 +1,13 @@
-import { boundMethod } from 'autobind-decorator';
+import PdfViewer from "sitna/PdfViewer";
+import { makeEl } from "sitna/utils";
 
-import PdfViewer from 'sitna/PdfViewer';
-import { makeEl } from 'sitna/utils';
+async function main(): Promise<void> {
+  customElements.define("sitna-pdf-viewer", PdfViewer);
 
-async function main() {
-  customElements.define('sitna-pdf-viewer', PdfViewer);
+  const pdfViewer = makeEl("sitna-pdf-viewer");
 
-  const pdfViewer = makeEl('sitna-pdf-viewer');
-
-  const fileInput = makeEl('input', { accept: 'pdf', type: 'file' });
-  fileInput.addEventListener('change', ev => {
+  const fileInput = makeEl("input", { accept: "pdf", type: "file" });
+  fileInput.addEventListener("change", () => {
     if (fileInput.files.length > 1) {
       throw new Error("Can only open one PDF at a time");
     } else if (fileInput.files.length < 1) {
@@ -19,7 +17,7 @@ async function main() {
     }
   });
 
-  const inputDiv = makeEl('div');
+  const inputDiv = makeEl("div");
   inputDiv.appendChild(fileInput);
   document.body.appendChild(inputDiv);
   document.body.appendChild(pdfViewer);
