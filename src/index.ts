@@ -30,10 +30,12 @@ async function main(): Promise<void> {
   document.body.appendChild(inputDiv);
 
   const bookmarkList = makeEl("div");
-  const button = new BookmarkButton();
-  bookmarkList.appendChild(button);
+  for(let i = 0; i < 10; i++){
+    const button = new BookmarkButton(manager, 1, (i + 1), (`button ${i+1}` ) );
+    bookmarkList.appendChild(button);
+  }
+  
   document.body.appendChild(bookmarkList);
-
   document.body.appendChild(manager);
 }
 
