@@ -80,6 +80,9 @@ export default class PdfPagination extends HTMLElement {
     if (!this.isConnected) {
       return;
     }
+    if (!this.currentPageEl) {
+      return;
+    }
     if (isNaN(this.currentPage)) {
       this.currentPageEl.value = "";
     } else {

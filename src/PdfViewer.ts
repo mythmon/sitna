@@ -40,19 +40,28 @@ export default class PdfViewer extends HTMLElement {
     }
   }
 
-  async setFile(file: File): Promise<void> {
-    const fileContents = await readBlobAsArrayBuffer(file);
-    this.pdf = await pdfjs.getDocument(fileContents).promise;
+  async setBlob(blob: Blob, pageNum?: number): Promise<void> {
+    const blobContents = await readBlobAsArrayBuffer(blob);
+    this.pdf = await pdfjs.getDocument(blobContents).promise;
+    if (pageNum) {
+      this.changePage(pageNum, false);
+    }
     this.redraw();
     this.dispatchEvent(new CustomEvent("pdf-change"));
     this.dispatchEvent(new CustomEvent("change"));
   }
 
-  set pageNum(value: number) {
-    this.setAttribute("pageNum", value.toString());
+  async changePage(pageNum: number, redraw = true): Promise<void> {
+    this.setAttribute("pageNum", pageNum.toString());
     this.dispatchEvent(new CustomEvent("page-change"));
     this.dispatchEvent(new CustomEvent("change"));
-    this.redraw();
+    if (redraw) {
+      await this.redraw();
+    }
+  }
+
+  set pageNum(value: number) {
+    this.changePage(value);
   }
 
   get pageNum(): number {
