@@ -2,10 +2,13 @@ import PdfViewer from "sitna/PdfViewer";
 import { makeEl } from "sitna/utils";
 import PdfPagination from "./PdfPagination";
 import SitnaDb from "./db";
+import BookmarkButton from "./bookmarkButton";
 
 async function main(): Promise<void> {
   customElements.define("sitna-pdf-viewer", PdfViewer);
   customElements.define("sitna-pdf-pagination", PdfPagination);
+  customElements.define("sitna-bookmark-button", BookmarkButton);
+
 
   let pdfViewer;
   let pagination;
@@ -55,6 +58,11 @@ async function main(): Promise<void> {
     libraryDiv.appendChild(manuscriptButton);
   }
   document.body.appendChild(libraryDiv);
+
+  const bookmarkList = makeEl("div");
+  const button = new BookmarkButton();
+  bookmarkList.appendChild(button);
+  document.body.appendChild(bookmarkList);
 }
 
 main();

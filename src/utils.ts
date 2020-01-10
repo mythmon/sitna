@@ -7,11 +7,13 @@ interface SitnaElementTagNameMap extends HTMLElementTagNameMap {
 export function makeEl<K extends keyof SitnaElementTagNameMap>(
   tagName: K,
   attributes?: { [key: string]: string },
+  text?: string,
 ): SitnaElementTagNameMap[K] {
   const el = document.createElement(tagName);
   for (const [key, val] of Object.entries(attributes || {})) {
     el.setAttribute(key, val);
   }
+  el.textContent = text;
   return el as SitnaElementTagNameMap[K];
 }
 
