@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "autobind-decorator": "^2.4.0",
+    "dexie": "^2.0.4",
     "pdfjs-dist": "^2.2.228"
   },
   "devDependencies": {
