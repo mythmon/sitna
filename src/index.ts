@@ -1,17 +1,15 @@
 import PdfViewer from "sitna/PdfViewer";
 import { makeEl } from "sitna/utils";
-import PdfPagination from "./PdfPagination";
 import BookmarkButton from "./bookmarkButton";
 import ManuscriptManager from "./ManuscriptManager";
+import "sitna/PdfPagination";
 
 async function main(): Promise<void> {
   customElements.define("sitna-pdf-viewer", PdfViewer);
-  customElements.define("sitna-pdf-pagination", PdfPagination);
   customElements.define("sitna-bookmark-button", BookmarkButton);
   customElements.define("sitna-manuscript-manager", ManuscriptManager);
 
   const manager = new ManuscriptManager();
-  (window as any).sitnaManager = manager;
 
   const fileInput = makeEl("input", { accept: ".pdf", type: "file" });
   fileInput.addEventListener("change", () => {

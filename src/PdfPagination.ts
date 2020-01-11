@@ -1,104 +1,55 @@
 import { boundMethod } from "autobind-decorator";
+import { LitElement, html, customElement, property } from "lit-element";
+import { TemplateResult } from "lit-html";
 
 import PdfViewer from "sitna/PdfViewer";
 
-const template: HTMLTemplateElement = document.createElement("template");
-template.innerHTML = `
-  <style>
-    :host {
-      display: block;
-    }
+@customElement("sitna-pdf-pagination")
+export default class PdfPagination extends LitElement {
+  _pdfViewer: PdfViewer | null;
 
-    #current-page {
-      width: 20px;
-    }
-  </style>
-  <div>
-    <button id="previous-page">&lt;</button>
-    <input id="current-page" />&nbsp;/&nbsp;<span id="total-pages">1</span>
-    <button id="next-page">&gt;</button>
-  </div>
-`;
+  @property({ type: Number })
+  currentPage = 0;
 
-export default class PdfPagination extends HTMLElement {
-  _pdfViewer?: PdfViewer;
-  prevPageEl: HTMLButtonElement;
-  nextPageEl: HTMLButtonElement;
-  currentPageEl: HTMLInputElement;
-  totalPagesEl: HTMLSpanElement;
+  @property({ type: Number })
+  totalPages = 0;
 
-  constructor(pdfViewer = null) {
-    super();
-    this.attachShadow({ mode: "open" });
-    this.pdfViewer = pdfViewer;
+  render(): TemplateResult {
+    return html`
+      <div>
+        <button @click="${this.handlePrevPage}" ?disabled="${this.currentPage <= 1}">&lt;</button>
+        <input
+          .value="${this.currentPage}"
+          @change="${this.handleCurrentPageChange}"
+        />&nbsp;/&nbsp;<span>${this.totalPages}</span>
+        <button @click="${this.handleNextPage}" ?disabled="${this.currentPage > this.totalPages}">
+          &gt;
+        </button>
+      </div>
+    `;
   }
 
-  connectedCallback(): void {
-    this.shadowRoot.appendChild(template.content.cloneNode(/* deep */ true));
-    this.prevPageEl = this.shadowRoot.querySelector("#previous-page");
-    this.nextPageEl = this.shadowRoot.querySelector("#next-page");
-    this.currentPageEl = this.shadowRoot.querySelector("#current-page");
-    this.totalPagesEl = this.shadowRoot.querySelector("#total-pages");
-
-    this.nextPageEl.addEventListener("click", this.handleNextPage);
-    this.prevPageEl.addEventListener("click", this.handlePrevPage);
-    this.currentPageEl.addEventListener("change", this.handleCurrentPageChange);
-
-    this.update();
-  }
-
+  @property({ attribute: false })
   get pdfViewer(): PdfViewer | null {
     return this._pdfViewer;
   }
 
-  set pdfViewer(value) {
-    if (this._pdfViewer) {
-      this._pdfViewer.removeEventListener("change", this.handlePdfViewerChange);
+  set pdfViewer(newViewer: PdfViewer | null) {
+    const oldViewer = this._pdfViewer;
+    if (oldViewer) {
+      oldViewer.removeEventListener("change", this.handlePdfViewerChange);
     }
-    if (value) {
-      value.addEventListener("change", this.handlePdfViewerChange);
+    if (newViewer) {
+      newViewer.addEventListener("change", this.handlePdfViewerChange);
     }
-    this._pdfViewer = value;
-    this.update();
-  }
-
-  get currentPage(): number {
-    if (!this.pdfViewer) {
-      return 1;
-    }
-    return this.pdfViewer.pageNum;
-  }
-
-  get totalPages(): number {
-    if (!this.pdfViewer) {
-      return 1;
-    }
-    return this.pdfViewer.totalPages;
-  }
-
-  update(): void {
-    if (!this.isConnected) {
-      return;
-    }
-    if (!this.currentPageEl) {
-      return;
-    }
-    if (isNaN(this.currentPage)) {
-      this.currentPageEl.value = "";
-    } else {
-      this.currentPageEl.value = this.currentPage.toString();
-    }
-
-    this.totalPagesEl.textContent = this.totalPages.toString();
-
-    this.prevPageEl.disabled = this.currentPage <= 1;
-    this.nextPageEl.disabled = this.currentPage >= this.totalPages;
+    this._pdfViewer = newViewer;
+    this.requestUpdate("pdfViewer", oldViewer);
   }
 
   @boundMethod
   handlePdfViewerChange(): void {
-    console.log("paginator observed a pdf change event");
-    this.update();
+    this.currentPage = this.pdfViewer?.pageNum || 0;
+    this.totalPages = this.pdfViewer?.totalPages || 0;
   }
 
   setPage(newPage: number): void {
@@ -108,17 +59,14 @@ export default class PdfPagination extends HTMLElement {
     this.pdfViewer.pageNum = newPage;
   }
 
-  @boundMethod
   handleNextPage(): void {
     this.setPage(this.currentPage + 1);
   }
 
-  @boundMethod
   handlePrevPage(): void {
     this.setPage(this.currentPage - 1);
   }
 
-  @boundMethod
   handleCurrentPageChange(ev): void {
     const page = parseInt(ev.target.value);
     if (!isNaN(page)) {
