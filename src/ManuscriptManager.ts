@@ -57,6 +57,7 @@ export default class ManuscriptManager extends HTMLElement {
 
   async addManuscript(blob: Blob): Promise<void> {
     await this.db.manuscripts.add({ blob });
+    document.dispatchEvent(new CustomEvent("sitna-storage-change"));
     this.updateLibrary();
   }
 

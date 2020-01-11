@@ -3,6 +3,7 @@ import { makeEl } from "sitna/utils";
 import BookmarkButton from "./bookmarkButton";
 import ManuscriptManager from "./ManuscriptManager";
 import "sitna/PdfPagination";
+import StorageTracker from "./StorageTracker";
 
 async function main(): Promise<void> {
   customElements.define("sitna-pdf-viewer", PdfViewer);
@@ -28,12 +29,13 @@ async function main(): Promise<void> {
   document.body.appendChild(inputDiv);
 
   const bookmarkList = makeEl("div");
-  for(let i = 0; i < 10; i++){
-    const button = new BookmarkButton(manager, 1, (i + 1), (`button ${i+1}` ) );
+  for (let i = 0; i < 10; i++) {
+    const button = new BookmarkButton(manager, 1, i + 1, `button ${i + 1}`);
     bookmarkList.appendChild(button);
   }
-  
+
   document.body.appendChild(bookmarkList);
+  document.body.appendChild(new StorageTracker());
   document.body.appendChild(manager);
 }
 
