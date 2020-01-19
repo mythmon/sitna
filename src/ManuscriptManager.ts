@@ -1,5 +1,4 @@
 import SitnaDb, {Manuscript} from "./db";
-import { makeEl } from "./utils";
 import PdfViewer from "./PdfViewer";
 import PdfPagination from "./PdfPagination";
 import { boundMethod } from "autobind-decorator";

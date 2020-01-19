@@ -1,10 +1,10 @@
-import PdfViewer from "sitna/PdfViewer";
 import { makeEl } from "sitna/utils";
 import BookmarkButton from "./bookmarkButton";
 import ManuscriptManager from "./ManuscriptManager";
 import "sitna/PdfPagination";
 import StorageTracker from "./StorageTracker";
 import BookmarkManager from "./BookmarkManager";
+
 
 async function main(): Promise<void> {
   customElements.define("sitna-bookmark-button", BookmarkButton);
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   const bookmarkList = makeEl("div");
 
   for (let i = 0; i < 1; i++) {
-    const button = new BookmarkButton(manager, 1, i + 1, `button ${i + 1}`);
+    const button = new BookmarkButton(manager, marker, 1, i + 1, `button ${i + 1}`);
     bookmarkList.appendChild(button);
   }
 

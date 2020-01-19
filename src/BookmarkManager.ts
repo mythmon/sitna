@@ -1,6 +1,6 @@
 import SitnaDb from "./db";
 
-export default class BookmarkManager extends HTMLElement {
+export default class BookmarkManager {
   _db: SitnaDb;
   
   get db(): SitnaDb {
@@ -25,4 +25,5 @@ export default class BookmarkManager extends HTMLElement {
   async updateBookmark(id: number, page: number, name: string): Promise<void> {
     await this.db.bookmarks.update(id, {name: name, page: page});
   }
+
 }
