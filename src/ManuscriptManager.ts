@@ -1,29 +1,43 @@
-import SitnaDb, {Manuscript} from "./db";
-import { makeEl } from "./utils";
-import PdfViewer from "./PdfViewer";
-import PdfPagination from "./PdfPagination";
+import SitnaDb, { Manuscript } from "./db";
+import "./PdfViewer";
+import "./PdfPagination";
 import { boundMethod } from "autobind-decorator";
-import { LitElement, customElement, CSSResult, css, html, property } from "lit-element";
+import {
+  LitElement,
+  customElement,
+  CSSResult,
+  css,
+  html,
+  property,
+  TemplateResult,
+} from "lit-element";
 import { repeat } from "lit-html/directives/repeat";
+import { readBlobAsArrayBuffer } from "./utils";
+import * as pdfjs from "pdfjs-dist/webpack";
 
-@customElement('sitna-manuscript-manager')
+enum ViewMode {
+  Single = "single",
+  TwoSpread = "two-spread",
+}
+
+@customElement("sitna-manuscript-manager")
 export default class ManuscriptManager extends LitElement {
   _db: SitnaDb;
-  viewers: Array<{
-    manuscriptId: number;
-    page: number;
-    viewer: PdfViewer;
-    pagination: PdfPagination;
-  }>;
 
   constructor() {
     super();
     this._db = null;
-    this.viewers = [];
+    this.views = [];
   }
 
   @property({ attribute: false })
-  manuscripts = []
+  manuscripts: Array<Manuscript> = [];
+
+  @property({ type: String })
+  viewMode = ViewMode.Single;
+
+  @property({ attribute: false })
+  views: Array<{ manuscriptId: number; pageNum: number; numPages: number }> = [];
 
   static get styles(): CSSResult {
     return css`
@@ -33,30 +47,94 @@ export default class ManuscriptManager extends LitElement {
     `;
   }
 
-  render() {
-    const viewer = new PdfViewer();
+  render(): TemplateResult {
     return html`
       <div class="library">
-        ${repeat(this.manuscripts, m => m.id, manuscript => html`
-          <button
-            @click="${this.handleLibraryButtonClick}"
-            data-manuscript-id="${manuscript.id}"
-          >
-            Manuscript #${manuscript.id}
-          </button>
-        `)}
+        ${repeat(
+          this.manuscripts,
+          m => m.id,
+          manuscript => html`
+            <button @click="${this.handleLibraryButtonClick}" data-manuscript-id="${manuscript.id}">
+              Manuscript #${manuscript.id}
+            </button>
+          `,
+        )}
       </div>
-      <sitna-pdf-pagination .pdfViewer="${viewer}"></sitna-pdf-pagination>
-      ${viewer}
+
+      <div @change="${this.handleViewModeChange}">
+        View mode:
+        <input
+          type="radio"
+          name="view-mode"
+          id="viewmode-single"
+          value="${ViewMode.Single}"
+          ?checked="${this.viewMode == ViewMode.Single}"
+        />
+        <label for="viewmode-single">Single</label>
+        <input
+          type="radio"
+          name="view-mode"
+          id="viewmode-two-spread"
+          value="${ViewMode.TwoSpread}"
+          ?checked="${this.viewMode == ViewMode.TwoSpread}"
+        />
+        <label for="viewmode-two-spread">Two Spread</label>
+      </div>
+
+      ${this.renderViewArea()}
     `;
   }
 
-  get pdfViewer(): PdfViewer {
-    return this.shadowRoot.querySelector('stina-pdf-viewer');
-  }
+  renderViewArea(): TemplateResult {
+    if (!this.views.length) {
+      return null;
+    }
 
-  get paginator(): PdfPagination {
-    return this.shadowRoot.querySelector('sitna-pdf-pagination');
+    switch (this.viewMode) {
+      case ViewMode.Single: {
+        const { manuscriptId, pageNum, numPages } = this.views[0];
+        return html`
+          <sitna-pdf-pagination
+            currentPage="${pageNum}"
+            totalPages="${numPages}"
+            .toChangePage="${this.setPageNumber}"
+          ></sitna-pdf-pagination>
+          <sitna-pdf-viewer manuscriptId="${manuscriptId}" pageNum="${pageNum}"></sitna-pdf-viewer>
+        `;
+      }
+
+      case ViewMode.TwoSpread: {
+        const { manuscriptId, numPages } = this.views[0];
+        let { pageNum } = this.views[0];
+
+        // Assume all spreads start with the left page as an odd number. If
+        // pageNum is an even number, then we are showing the wrong half of a
+        // page. Make it so that page is shown as the right-side page.
+        if (pageNum % 2 == 0) {
+          pageNum -= 1;
+        }
+
+        return html`
+          <sitna-pdf-pagination
+            currentPage="${pageNum}"
+            totalPages="${numPages}"
+            .toChangePage="${this.setPageNumber}"
+            step="2"
+          ></sitna-pdf-pagination>
+          <sitna-pdf-viewer manuscriptId="${manuscriptId}" pageNum="${pageNum}"></sitna-pdf-viewer>
+          <sitna-pdf-viewer
+            manuscriptId="${manuscriptId}"
+            pageNum="${pageNum + 1}"
+          ></sitna-pdf-viewer>
+        `;
+      }
+
+      default: {
+        return html`
+          <span class="error">Error: unknown view mode ${this.viewMode}</span>
+        `;
+      }
+    }
   }
 
   connectedCallback(): void {
@@ -89,14 +167,38 @@ export default class ManuscriptManager extends LitElement {
   }
 
   @boundMethod
-  async handleLibraryButtonClick(ev): Promise<void> {
-    const manuscriptId = parseInt(ev.target.dataset.manuscriptId);
-    this.showManuscriptPage(manuscriptId);
+  async handleLibraryButtonClick(ev: InputEvent): Promise<void> {
+    const manuscriptId = parseInt((ev.target as HTMLElement).dataset.manuscriptId);
+    await this.showManuscriptPage(manuscriptId);
   }
 
   async showManuscriptPage(manuscriptId, pageNum = 1): Promise<void> {
-    const manuscript = await this.db.manuscripts.get(manuscriptId);
-    const viewer = this.shadowRoot.querySelector("sitna-pdf-viewer") as PdfViewer;
-    await viewer.setBlob(manuscript.blob, pageNum);
+    const manuscript = this.manuscripts.find(m => m.id == manuscriptId);
+    if (!manuscript) {
+      throw new Error(`Manuscript with id ${manuscriptId} not found`);
+    }
+
+    const blobContents = await readBlobAsArrayBuffer(manuscript.blob);
+    const pdf = await pdfjs.getDocument(blobContents).promise;
+
+    this.views = [{ manuscriptId, pageNum, numPages: pdf.numPages }];
+    this.requestUpdate();
+  }
+
+  @boundMethod
+  handleViewModeChange(ev: InputEvent): void {
+    this.viewMode = (ev.target as HTMLInputElement).getAttribute("value") as ViewMode;
+  }
+
+  @boundMethod
+  setPageNumber(pageNum: number): void {
+    if (this.viewMode == ViewMode.Single || this.viewMode == ViewMode.TwoSpread) {
+      for (let i = 0; i < this.views.length; i++) {
+        this.views[i].pageNum = pageNum + i;
+      }
+    } else {
+      throw new Error(`Unkown view mode ${this.viewMode}`);
+    }
+    this.requestUpdate("views");
   }
 }

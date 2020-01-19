@@ -5,6 +5,8 @@ export default class SitnaDb extends Dexie {
 
   constructor() {
     super("SitnaDb");
+
+    // Initial version with just a simple list of blobs
     this.version(1).stores({
       manuscripts: "++id, blob",
     });

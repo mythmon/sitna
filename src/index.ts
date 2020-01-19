@@ -1,4 +1,3 @@
-import PdfViewer from "sitna/PdfViewer";
 import { makeEl } from "sitna/utils";
 import BookmarkButton from "./bookmarkButton";
 import ManuscriptManager from "./ManuscriptManager";
