@@ -1,22 +1,13 @@
-import SitnaDb from "./db";
+import SitnaDb, {Manuscript} from "./db";
 import { makeEl } from "./utils";
 import PdfViewer from "./PdfViewer";
 import PdfPagination from "./PdfPagination";
 import { boundMethod } from "autobind-decorator";
+import { LitElement, customElement, CSSResult, css, html, property } from "lit-element";
+import { repeat } from "lit-html/directives/repeat";
 
-const template: HTMLTemplateElement = document.createElement("template");
-template.innerHTML = `
-  <style>
-    :host {
-      display: block;
-    }
-  </style>
-  <div class="library"></div>
-  <sitna-pdf-pagination></sitna-pdf-pagination>
-  <sitna-pdf-viewer></sitna-pdf-viewer>
-`;
-
-export default class ManuscriptManager extends HTMLElement {
+@customElement('sitna-manuscript-manager')
+export default class ManuscriptManager extends LitElement {
   _db: SitnaDb;
   viewers: Array<{
     manuscriptId: number;
@@ -27,17 +18,49 @@ export default class ManuscriptManager extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
-
     this._db = null;
     this.viewers = [];
   }
 
+  @property({ attribute: false })
+  manuscripts = []
+
+  static get styles(): CSSResult {
+    return css`
+      :host {
+        display: block;
+      }
+    `;
+  }
+
+  render() {
+    const viewer = new PdfViewer();
+    return html`
+      <div class="library">
+        ${repeat(this.manuscripts, m => m.id, manuscript => html`
+          <button
+            @click="${this.handleLibraryButtonClick}"
+            data-manuscript-id="${manuscript.id}"
+          >
+            Manuscript #${manuscript.id}
+          </button>
+        `)}
+      </div>
+      <sitna-pdf-pagination .pdfViewer="${viewer}"></sitna-pdf-pagination>
+      ${viewer}
+    `;
+  }
+
+  get pdfViewer(): PdfViewer {
+    return this.shadowRoot.querySelector('stina-pdf-viewer');
+  }
+
+  get paginator(): PdfPagination {
+    return this.shadowRoot.querySelector('sitna-pdf-pagination');
+  }
+
   connectedCallback(): void {
-    this.shadowRoot.appendChild(template.content.cloneNode(/* deep */ true));
-    const pdfViewer = this.shadowRoot.querySelector("sitna-pdf-viewer") as PdfViewer;
-    const paginator = this.shadowRoot.querySelector("sitna-pdf-pagination") as PdfPagination;
-    paginator.pdfViewer = pdfViewer;
+    super.connectedCallback();
     this.updateLibrary();
   }
 
@@ -57,23 +80,12 @@ export default class ManuscriptManager extends HTMLElement {
 
   async addManuscript(blob: Blob): Promise<void> {
     await this.db.manuscripts.add({ blob });
-    document.dispatchEvent(new CustomEvent("sitna-storage-change"));
     this.updateLibrary();
+    document.dispatchEvent(new CustomEvent("sitna-storage-change"));
   }
 
   async updateLibrary(): Promise<void> {
-    const newLibraryEl = makeEl("div", { class: "library" });
-    await this.db.manuscripts.each(manuscript => {
-      const manuscriptButton = makeEl("button");
-      manuscriptButton.textContent = `Manuscript #${manuscript.id}`;
-      manuscriptButton.dataset.manuscriptId = manuscript.id.toString();
-      manuscriptButton.addEventListener("click", this.handleLibraryButtonClick);
-      newLibraryEl.appendChild(manuscriptButton);
-    });
-    const oldLibraryEl = this.shadowRoot.querySelector(".library");
-    // this.shadowRoot.prepend(newLibraryEl);
-    // this.shadowRoot.removeChild(oldLibraryEl);
-    this.shadowRoot.replaceChild(newLibraryEl, oldLibraryEl);
+    this.manuscripts = await this.db.manuscripts.toArray();
   }
 
   @boundMethod

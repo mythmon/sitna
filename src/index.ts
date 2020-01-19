@@ -7,9 +7,7 @@ import StorageTracker from "./StorageTracker";
 import BookmarkManager from "./BookmarkManager";
 
 async function main(): Promise<void> {
-  customElements.define("sitna-pdf-viewer", PdfViewer);
   customElements.define("sitna-bookmark-button", BookmarkButton);
-  customElements.define("sitna-manuscript-manager", ManuscriptManager);
 
   const manager = new ManuscriptManager();
   const marker = new BookmarkManager();

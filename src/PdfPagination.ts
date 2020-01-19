@@ -22,7 +22,10 @@ export default class PdfPagination extends LitElement {
           .value="${this.currentPage}"
           @change="${this.handleCurrentPageChange}"
         />&nbsp;/&nbsp;<span>${this.totalPages}</span>
-        <button @click="${this.handleNextPage}" ?disabled="${this.currentPage > this.totalPages}">
+        <button
+          @click="${this.handleNextPage}"
+          ?disabled="${this.currentPage >= this.totalPages}"
+        >
           &gt;
         </button>
       </div>

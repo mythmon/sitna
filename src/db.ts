@@ -15,7 +15,7 @@ export default class SitnaDb extends Dexie {
   }
 }
 
-interface Manuscript {
+export interface Manuscript {
   id?: number;
   blob: Blob;
 }

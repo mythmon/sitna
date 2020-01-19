@@ -1,71 +1,52 @@
 import * as pdfjs from "pdfjs-dist/webpack";
 
 import { makeEl, readBlobAsArrayBuffer } from "sitna/utils";
+import { LitElement, customElement, TemplateResult, html, property } from "lit-element";
+import { PDFDocumentProxy } from "pdfjs-dist/webpack";
 
-export default class PdfViewer extends HTMLElement {
-  canvas: HTMLCanvasElement;
-  pdf?: pdfjs.PDFDocumentProxy;
-
-  static get observedAttributes(): Array<string> {
-    return ["pageNum"];
-  }
+@customElement('sitna-pdf-viewer')
+export default class PdfViewer extends LitElement {
+  _pdf: pdfjs.PDFDocumentProxy | null;
+  _pageNum: number;
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
-    this.canvas = null;
-    this.pdf = null;
+    this._pageNum = 0;
+    this._pdf = null;
   }
 
-  connectedCallback(): void {
-    if (!this.hasAttribute("pageNum")) {
-      this.setAttribute("pageNum", "1");
-    }
-
-    this._upgradeProperty("pageNum");
-
-    this.canvas = makeEl("canvas");
-    this.shadowRoot.appendChild(this.canvas);
+  @property({ type: Number })
+  get pageNum() {
+    return this._pageNum;
   }
 
-  /**
-   * Get any value of prop that may have been set on this element before the
-   * custom element definition loaded.
-   */
-  _upgradeProperty(prop): void {
-    if (this.hasOwnProperty(prop)) {
-      const temp = this[prop];
-      delete this[prop];
-      this[prop] = temp;
-    }
+  set pageNum(value: number) {
+    let oldValue = this._pageNum;
+    this._pageNum = value;
+    this.dispatchEvent(new CustomEvent("page-change"));
+    this.dispatchEvent(new CustomEvent("change"));
+    this.redraw();
+    this.requestUpdate("pageNum", oldValue);
+  }
+
+  @property({ attribute: false })
+  pdf = null;
+
+  render(): TemplateResult {
+    return html`<canvas></canvas>`;
   }
 
   async setBlob(blob: Blob, pageNum?: number): Promise<void> {
     const blobContents = await readBlobAsArrayBuffer(blob);
     this.pdf = await pdfjs.getDocument(blobContents).promise;
     if (pageNum) {
-      this.changePage(pageNum, false);
+      this.pageNum = pageNum;
+    } else {
+      this.redraw();
+      // the pageNum setter also emits a change event. Don't double it.
+      this.dispatchEvent(new CustomEvent("change"));
     }
-    this.redraw();
     this.dispatchEvent(new CustomEvent("pdf-change"));
-    this.dispatchEvent(new CustomEvent("change"));
-  }
-
-  async changePage(pageNum: number, redraw = true): Promise<void> {
-    this.setAttribute("pageNum", pageNum.toString());
-    this.dispatchEvent(new CustomEvent("page-change"));
-    this.dispatchEvent(new CustomEvent("change"));
-    if (redraw) {
-      await this.redraw();
-    }
-  }
-
-  set pageNum(value: number) {
-    this.changePage(value);
-  }
-
-  get pageNum(): number {
-    return parseInt(this.getAttribute("pageNum"));
   }
 
   get totalPages(): number {
@@ -73,6 +54,10 @@ export default class PdfViewer extends HTMLElement {
       return 1;
     }
     return this.pdf.numPages;
+  }
+
+  get canvas(): HTMLCanvasElement | null {
+    return this.shadowRoot.querySelector('canvas');
   }
 
   async redraw(): Promise<void> {
