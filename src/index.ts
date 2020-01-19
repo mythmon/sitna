@@ -35,9 +35,6 @@ async function main(): Promise<void> {
     bookmarkList.appendChild(button);
   }
 
-  const bookmarkAdd = makeEl("button", {}, "+");
-  
-
   document.body.appendChild(bookmarkList);
   document.body.appendChild(new StorageTracker());
   document.body.appendChild(manager);
