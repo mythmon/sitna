@@ -6,9 +6,7 @@ import "sitna/PdfPagination";
 import StorageTracker from "./StorageTracker";
 
 async function main(): Promise<void> {
-  customElements.define("sitna-pdf-viewer", PdfViewer);
   customElements.define("sitna-bookmark-button", BookmarkButton);
-  customElements.define("sitna-manuscript-manager", ManuscriptManager);
 
   const manager = new ManuscriptManager();
 
