@@ -29,7 +29,7 @@ async function main(): Promise<void> {
   document.body.appendChild(inputDiv);
 
   const bookmarkList = makeEl("div");
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 1; i++) {
     const button = new BookmarkButton(manager, 1, i + 1, `button ${i + 1}`);
     bookmarkList.appendChild(button);
   }
