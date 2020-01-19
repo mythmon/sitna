@@ -1,4 +1,5 @@
 import SitnaDb from "./db";
+import { makeEl } from "./utils";
 
 export default class BookmarkManager extends HTMLElement {
   _db: SitnaDb;
@@ -10,6 +11,10 @@ export default class BookmarkManager extends HTMLElement {
     return this._db;
   }
 
+  connectedCallback(): void {
+    const button = makeEl("button", {"title": "Add a bookmark"}, "+");
+  }
+  
   async addBookMark(page: number, name: string, manId: number): Promise<void> {
     await this.db.bookmarks.add({ name: name, page: page, manId: manId });
   }
