@@ -7,11 +7,10 @@ export default class BookmarkButton extends HTMLElement {
   manager?: ManuscriptManager;
   marker?: BookmarkButton;
   
-  constructor(manager = null, marker = null, manuscriptId = null, manuscriptPage = 1, name = "Missing Num") {
+  constructor(manager = null, manuscriptId = null, manuscriptPage = 1, name = "Missing Num") {
     super();
     this.attachShadow({ mode: "open" });
     this.manager = manager
-    this.marker = marker
     this.manuscriptId = manuscriptId
     this.manuscriptPage = manuscriptPage
     this.name = name
