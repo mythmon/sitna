@@ -11,7 +11,7 @@ export default class BookmarkManager {
   }
 
   async addBookMark(page: number, name: string, manId: number): Promise<void> {
-    await this.db.bookmarks.add({ name: name, page: page, manId: manId });
+    await this.db.bookmarks.add({ name, page, manId});
   }
 
   async deleteBookmark(id: number): Promise<void>{
@@ -23,7 +23,7 @@ export default class BookmarkManager {
   }
 
   async updateBookmark(id: number, page: number, name: string): Promise<void> {
-    await this.db.bookmarks.update(id, {name: name, page: page});
+    await this.db.bookmarks.update(id, {name, page});
   }
 
 }
