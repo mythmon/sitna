@@ -67,7 +67,6 @@ export default class StorageTracker extends LitElement {
   private async updateStorage(): Promise<void> {
     this.state = await storage.state();
     this.quota = await storage.estimate();
-    console.log(this.quota);
   }
 
   render(): TemplateResult {
