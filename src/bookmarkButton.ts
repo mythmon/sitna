@@ -5,6 +5,7 @@ import ManuscriptManager from "./ManuscriptManager";
 
 export default class BookmarkButton extends HTMLElement {
   manager?: ManuscriptManager;
+  marker?: BookmarkButton;
   
   constructor(manager = null, manuscriptId = null, manuscriptPage = 1, name = "Missing Num") {
     super();

@@ -3,11 +3,15 @@ import BookmarkButton from "./bookmarkButton";
 import ManuscriptManager from "./ManuscriptManager";
 import "sitna/PdfPagination";
 import StorageTracker from "./StorageTracker";
+import BookmarkToolBar from "./BookmarkToolBar";
+
 
 async function main(): Promise<void> {
   customElements.define("sitna-bookmark-button", BookmarkButton);
 
   const manager = new ManuscriptManager();
+  const toolbar = new BookmarkToolBar();
+  
 
   const fileInput = makeEl("input", { accept: ".pdf", type: "file" });
   fileInput.addEventListener("change", () => {
@@ -26,14 +30,16 @@ async function main(): Promise<void> {
   document.body.appendChild(inputDiv);
 
   const bookmarkList = makeEl("div");
-  for (let i = 0; i < 10; i++) {
+
+  for (let i = 0; i < 1; i++) {
     const button = new BookmarkButton(manager, 1, i + 1, `button ${i + 1}`);
     bookmarkList.appendChild(button);
   }
-
+  document.body.appendChild(toolbar);
   document.body.appendChild(bookmarkList);
   document.body.appendChild(new StorageTracker());
   document.body.appendChild(manager);
+  
 }
 
 main();
